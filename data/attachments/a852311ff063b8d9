@@ -1,0 +1,125 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: ui/tests/inventory.spec.ts >> SauceDemo Inventory & Product Details Suite @ui @inventory >> Add to cart from product details page updates badge
+- Location: ui/tests/inventory.spec.ts:79:7
+
+# Error details
+
+```
+Error: locator.click: Error: strict mode violation: locator('button:has-text("Add to cart")') resolved to 6 elements:
+    1) <button id="add-to-cart-sauce-labs-backpack" name="add-to-cart-sauce-labs-backpack" data-test="add-to-cart-sauce-labs-backpack" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-backpack"]')
+    2) <button id="add-to-cart-sauce-labs-bike-light" name="add-to-cart-sauce-labs-bike-light" data-test="add-to-cart-sauce-labs-bike-light" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bike-light"]')
+    3) <button id="add-to-cart-sauce-labs-bolt-t-shirt" name="add-to-cart-sauce-labs-bolt-t-shirt" data-test="add-to-cart-sauce-labs-bolt-t-shirt" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]')
+    4) <button id="add-to-cart-sauce-labs-fleece-jacket" name="add-to-cart-sauce-labs-fleece-jacket" class="btn btn_primary btn_small btn_inventory " data-test="add-to-cart-sauce-labs-fleece-jacket">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]')
+    5) <button id="add-to-cart-sauce-labs-onesie" name="add-to-cart-sauce-labs-onesie" data-test="add-to-cart-sauce-labs-onesie" class="btn btn_primary btn_small btn_inventory ">Add to cart</button> aka locator('[data-test="add-to-cart-sauce-labs-onesie"]')
+    6) <button class="btn btn_primary btn_small btn_inventory " id="add-to-cart-test.allthethings()-t-shirt-(red)" name="add-to-cart-test.allthethings()-t-shirt-(red)" data-test="add-to-cart-test.allthethings()-t-shirt-(red)">Add to cart</button> aka locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
+
+Call log:
+  - waiting for locator('button:has-text("Add to cart")')
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - button "Open Menu" [ref=e8] [cursor=pointer]
+          - img "Open Menu" [ref=e9]
+        - generic [ref=e11]: Swag Labs
+        - button "Cart, empty" [ref=e13]
+      - button "Back to products" [ref=e16] [cursor=pointer]
+    - main [ref=e17]:
+      - generic [ref=e19]:
+        - img "Sauce Labs Backpack" [ref=e21]
+        - generic [ref=e22]:
+          - generic [ref=e23]: Sauce Labs Backpack
+          - generic [ref=e24]: carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.
+          - generic [ref=e25]: $29.99
+          - button "Add to cart" [ref=e26] [cursor=pointer]
+  - contentinfo [ref=e27]:
+    - list [ref=e28]:
+      - listitem [ref=e29]:
+        - link "X" [ref=e30] [cursor=pointer]:
+          - /url: https://x.com/saucelabs
+      - listitem [ref=e31]:
+        - link "Facebook" [ref=e32] [cursor=pointer]:
+          - /url: https://www.facebook.com/saucelabs
+      - listitem [ref=e33]:
+        - link "LinkedIn" [ref=e34] [cursor=pointer]:
+          - /url: https://www.linkedin.com/company/sauce-labs/
+    - generic [ref=e35]: © 2026 Sauce Labs. All Rights Reserved. Terms of Service | Privacy Policy
+```
+
+# Test source
+
+```ts
+  1  | import { Locator, Page } from '@playwright/test';
+  2  | import { HeaderComponent } from '../components/HeaderComponent';
+  3  | 
+  4  | export class ProductDetailPage {
+  5  |   readonly page: Page;
+  6  |   readonly header: HeaderComponent;
+  7  |   readonly productName: Locator;
+  8  |   readonly productDescription: Locator;
+  9  |   readonly productPrice: Locator;
+  10 |   readonly addToCartButton: Locator;
+  11 |   readonly removeButton: Locator;
+  12 |   readonly backToProductsButton: Locator;
+  13 | 
+  14 |   constructor(page: Page) {
+  15 |     this.page = page;
+  16 |     this.header = new HeaderComponent(page);
+  17 |     this.productName = page.locator('.inventory_details_name');
+  18 |     this.productDescription = page.locator('.inventory_details_desc');
+  19 |     this.productPrice = page.locator('.inventory_details_price');
+  20 |     this.addToCartButton = page.locator('button:has-text("Add to cart")');
+  21 |     this.removeButton = page.locator('button:has-text("Remove")');
+  22 |     this.backToProductsButton = page.locator('[data-test="back-to-products"]');
+  23 |   }
+  24 | 
+  25 |   async getProductName(): Promise<string> {
+  26 |     return (await this.productName.textContent()) || '';
+  27 |   }
+  28 | 
+  29 |   async getProductDescription(): Promise<string> {
+  30 |     return (await this.productDescription.textContent()) || '';
+  31 |   }
+  32 | 
+  33 |   async getProductPrice(): Promise<number> {
+  34 |     const text = await this.productPrice.textContent();
+  35 |     return text ? parseFloat(text.replace('$', '')) : 0;
+  36 |   }
+  37 | 
+  38 |   async addToCart(): Promise<void> {
+> 39 |     await this.addToCartButton.click();
+     |                                ^ Error: locator.click: Error: strict mode violation: locator('button:has-text("Add to cart")') resolved to 6 elements:
+  40 |   }
+  41 | 
+  42 |   async removeFromCart(): Promise<void> {
+  43 |     await this.removeButton.click();
+  44 |   }
+  45 | 
+  46 |   async isAddToCartButtonVisible(): Promise<boolean> {
+  47 |     return this.addToCartButton.isVisible();
+  48 |   }
+  49 | 
+  50 |   async isRemoveButtonVisible(): Promise<boolean> {
+  51 |     return this.removeButton.isVisible();
+  52 |   }
+  53 | 
+  54 |   async clickBackToProducts(): Promise<void> {
+  55 |     await this.backToProductsButton.click();
+  56 |   }
+  57 | }
+  58 | 
+```
